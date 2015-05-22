@@ -16,7 +16,7 @@ type OnlineJSON struct {
 			NowAvailableList map[CUser]BuddyInformation `json:"nowAvailableList"`
 		} `json:"buddy_list"`
 	} `json:"payload"`
-	Error        int    `json:"error"`
+	ErrorCode    int    `json:"error"`
 	ErrorSummary string `json:"errorSummary"`
 }
 
@@ -30,6 +30,12 @@ type BuddyInformation struct {
 type OnlineStatus map[string]string
 
 type Online map[CUser]map[string]string
+
+type OnlineJSONError OnlineJSON
+
+func (j OnlineJSONError) Error() string {
+	return fmt.Sprintf("login into FB failed, maybe wrong cookies? Facebook error (%d): %s", j.ErrorCode, j.ErrorSummary)
+}
 
 func (c Client) ReqOnlineJSON() (*OnlineJSON, error) {
 	url := fmt.Sprintf("https://www.facebook.com/ajax/chat/buddy_list.php?user=%s&__a=1", c.CUser)
@@ -53,8 +59,8 @@ func (c Client) ReqOnlineJSON() (*OnlineJSON, error) {
 	if err != nil {
 		return nil, err
 	}
-	if j.Error != 0 {
-		return nil, fmt.Errorf("Login into FB failed. Maybe wrong cookies? Facebook Error (%d): %s", j.Error, j.ErrorSummary)
+	if j.ErrorCode != 0 {
+		return nil, OnlineJSONError(j)
 	}
 	return &j, nil
 }
@@ -64,7 +70,7 @@ func (c Client) ReqOnline() (*Online, error) {
 	if err != nil {
 		return nil, err
 	}
-	var o Online
+	o := make(Online)
 	for id, status := range j.Payload.BuddyList.NowAvailableList {
 		o[id] = status.P
 	}
