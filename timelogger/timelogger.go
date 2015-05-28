@@ -31,9 +31,8 @@ func (t *TimeLogger) Start(id fbchat.CUser, cookie fbchat.Cookie, interval time.
 	t.Done[id] = make(chan bool)
 
 	metaErrCh := make(chan error)
-	go t.observe(id, cookie, interval, saveCh, metaErrCh) //TODO: obsere unabhäng von t machen
+	go observe(id, cookie, interval, saveCh, t.Done[id], metaErrCh)
 
-	//handle errors and set handle error
 	select {
 	case err := <-metaErrCh:
 		t.Jobs[id] = false

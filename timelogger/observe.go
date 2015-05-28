@@ -26,7 +26,7 @@ func (oMap onlineMap) diff(other onlineMap) onlineMap {
 	return res
 }
 
-func (t *TimeLogger) observe(cUser fbchat.CUser, cookie fbchat.Cookie, interval time.Duration, saveCh chan<- *Onlinetime, errorCh chan<- error) {
+func observe(cUser fbchat.CUser, cookie fbchat.Cookie, interval time.Duration, saveCh chan<- *Onlinetime, doneCh chan bool, errorCh chan<- error) {
 
 	c, err := fbchat.NewClient(cUser, cookie, &http.Client{})
 	if err != nil {
@@ -36,7 +36,7 @@ func (t *TimeLogger) observe(cUser fbchat.CUser, cookie fbchat.Cookie, interval 
 
 	onlineBefore := make(onlineMap)
 	onlineNow := make(onlineMap)
-	fmt.Printf("[%s] %s: >start\n", Now(), cUser)
+	fmt.Printf("[%s] %s: >Start\n", Now(), cUser)
 
 	tick := time.NewTicker(interval * time.Second)
 
@@ -81,8 +81,8 @@ func (t *TimeLogger) observe(cUser fbchat.CUser, cookie fbchat.Cookie, interval 
 
 			fmt.Printf("[%s] %s: >New Client (%d), Saved to DB (%d), Observing (%d)\n", Now(), cUser, len(loggedInMap), len(loggedOutMap), len(onlineNow))
 
-		case <-t.Done[cUser]:
-			fmt.Printf("[%s] %s: >stop\n", Now(), cUser)
+		case <-doneCh:
+			fmt.Printf("[%s] %s: >Stop\n", Now(), cUser)
 			return
 		}
 	}
