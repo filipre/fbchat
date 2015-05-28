@@ -1,5 +1,5 @@
 # fbchat
-_This Go package is part of the [Facebook Onlinetime Logger]() project. Please follow the link if you are interested into it._
+<!-- _This Go package is part of the [Facebook Onlinetime Logger]() project. Please follow the link if you are interested into it._ -->
 
 [Go](http://golang.org/) package to access the Facebook messenger and to gain data from it like currently online users.
 
@@ -9,15 +9,22 @@ Create a `fbchat.Client` and provide your `c_user`, `datr` and `xs` values from 
 
 ### Currently Online
 
-```
-//code example
+```go
+c, err := fbchat.NewClient(cUser, cookie, &http.Client{})
+online, err := c.ReqOnline()
 ```
 
 ### Friend's Messenger Information
 
+```go
+c, err := fbchat.NewClient(cUser, cookie, &http.Client{})
+friends, err := c.ReqFriends(cUser1, cUser2, ...)
 ```
-//Code example
-```
+
+## TODO
+
+- godoc & more comments in source code
+- tests
 
 ## Licence (MIT)
 
