@@ -31,13 +31,12 @@ func (t *TimeLogger) observe(cUser fbchat.CUser, cookie fbchat.Cookie, interval 
 	c, err := fbchat.NewClient(cUser, cookie, &http.Client{})
 	if err != nil {
 		errorCh <- err
-		t.Jobs[cUser] = false
 		return
 	}
 
 	onlineBefore := make(onlineMap)
 	onlineNow := make(onlineMap)
-	fmt.Printf("[%s]: Logging Job started\n", cUser)
+	fmt.Printf("[%s] %s: >start\n", Now(), cUser)
 
 	tick := time.NewTicker(interval * time.Second)
 
@@ -49,7 +48,6 @@ func (t *TimeLogger) observe(cUser fbchat.CUser, cookie fbchat.Cookie, interval 
 			online, err := c.ReqOnline()
 			if err != nil {
 				errorCh <- err
-				t.Jobs[cUser] = false
 				return
 			}
 
@@ -77,16 +75,14 @@ func (t *TimeLogger) observe(cUser fbchat.CUser, cookie fbchat.Cookie, interval 
 			//Client changed his status
 			for key, inactive := range loggedOutMap {
 				inactive.LoggedOut = Now()
-
 				saveCh <- inactive
 				delete(onlineBefore, key)
 			}
 
-			fmt.Printf("[%s]: New Client (%d), Saved to DB (%d), Observing (%d)\n", cUser, len(loggedInMap), len(loggedOutMap), len(onlineNow))
+			fmt.Printf("[%s] %s: >New Client (%d), Saved to DB (%d), Observing (%d)\n", Now(), cUser, len(loggedInMap), len(loggedOutMap), len(onlineNow))
 
 		case <-t.Done[cUser]:
-			fmt.Printf("[%s]: stopped\n", cUser)
-			//t.Jobs[cUser] = false TODO...
+			fmt.Printf("[%s] %s: >stop\n", Now(), cUser)
 			return
 		}
 	}
